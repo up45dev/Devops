@@ -1,0 +1,233 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+// Toolbar
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  .app-icon {
+    margin-right: 8px;
+    font-size: 28px;
+  }
+  
+  .app-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
+  .spacer {
+    flex: 1 1 auto;
+  }
+  
+  .projeto-selector {
+    .projeto-field {
+      width: 250px;
+      
+      ::ng-deep {
+        .mat-form-field-outline {
+          color: rgba(255, 255, 255, 0.7) !important;
+        }
+        
+        .mat-form-field-label {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .mat-select-value {
+          color: white !important;
+        }
+        
+        .mat-select-arrow {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+      }
+    }
+  }
+  
+  .version {
+    margin-left: 16px;
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+}
+
+// Conteúdo Principal
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+// Informações do Projeto
+.projeto-info {
+  margin: 16px 20px 0 20px;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  border-left: 4px solid #4caf50;
+  
+  .projeto-info-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    mat-icon {
+      color: #4caf50;
+    }
+    
+    span {
+      color: #2e7d32;
+    }
+  }
+}
+
+// Abas
+.main-tabs {
+  flex: 1;
+  margin: 16px 20px 20px 20px;
+  
+  ::ng-deep {
+    .mat-tab-group {
+      height: 100%;
+    }
+    
+    .mat-tab-body-wrapper {
+      flex: 1;
+      display: flex;
+    }
+    
+    .mat-tab-body {
+      flex: 1;
+      display: flex;
+    }
+    
+    .mat-tab-body-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .mat-tab-label {
+      min-width: 160px;
+      
+      .mat-tab-label-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+}
+
+.tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+  
+  .btn-nova-tarefa {
+    mat-icon {
+      margin-right: 4px;
+    }
+  }
+}
+
+// Footer
+.app-footer {
+  background: #37474f;
+  color: white;
+  padding: 16px 0;
+  margin-top: auto;
+  
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    
+    .footer-links {
+      a {
+        color: white;
+        text-decoration: none;
+        
+        mat-icon {
+          margin-right: 4px;
+          font-size: 16px;
+        }
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .app-toolbar {
+    .app-title {
+      font-size: 1rem;
+    }
+    
+    .projeto-selector {
+      .projeto-field {
+        width: 200px;
+      }
+    }
+    
+    .version {
+      display: none;
+    }
+  }
+  
+  .main-content {
+    margin: 0;
+  }
+  
+  .projeto-info {
+    margin: 16px 10px 0 10px;
+  }
+  
+  .main-tabs {
+    margin: 16px 10px 20px 10px;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    
+    .footer-links {
+      margin-top: 8px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .app-toolbar {
+    .projeto-selector {
+      .projeto-field {
+        width: 150px;
+      }
+    }
+  }
+  
+  .tab-header {
+    .btn-nova-tarefa {
+      width: 100%;
+    }
+  }
+}

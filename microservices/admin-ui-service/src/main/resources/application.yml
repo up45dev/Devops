@@ -1,0 +1,75 @@
+# Admin UI Service Configuration
+spring:
+  application:
+    name: admin-ui-service
+  profiles:
+    active: default
+
+server:
+  port: 8090
+
+# Vaadin Configuration
+vaadin:
+  launch-browser: false
+  whitelisted-packages: com.taskmanagement.admin
+  productionMode: false
+
+# Eureka Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+
+# API Gateway URL
+api:
+  gateway:
+    url: http://localhost:8000
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.taskmanagement.admin: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/admin-ui-service.log
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+api:
+  gateway:
+    url: http://api-gateway:8000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/

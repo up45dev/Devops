@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # Service Discovery
+  discovery-service:
+    build: ./discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - microservices-network
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+      - auth-db
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
+    networks:
+      - microservices-network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - discovery-service
+      - auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+    networks:
+      - microservices-network
+
+  # Projeto Service
+  projeto-service:
+    build: ./projeto-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery-service
+      - projeto-db
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://projeto-db:5432/projetodb
+    networks:
+      - microservices-network
+
+  # Tarefa Service
+  tarefa-service:
+    build: ./tarefa-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery-service
+      - tarefa-db
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://tarefa-db:5432/tarefadb
+    networks:
+      - microservices-network
+
+  # Admin UI Service (Vaadin)
+  admin-ui-service:
+    build: ./admin-ui-service
+    ports:
+      - "8090:8090"
+    depends_on:
+      - discovery-service
+      - api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+    networks:
+      - microservices-network
+
+  # Web UI Service (Thymeleaf)
+  web-ui-service:
+    build: ./web-ui-service
+    ports:
+      - "8091:8091"
+    depends_on:
+      - discovery-service
+      - api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka
+    networks:
+      - microservices-network
+
+  # Databases
+  auth-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=authdb
+      - POSTGRES_USER=authuser
+      - POSTGRES_PASSWORD=authpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  projeto-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=projetodb
+      - POSTGRES_USER=projetouser
+      - POSTGRES_PASSWORD=projetopass
+    ports:
+      - "5433:5432"
+    volumes:
+      - projeto_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  tarefa-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=tarefadb
+      - POSTGRES_USER=tarefauser
+      - POSTGRES_PASSWORD=tarefapass
+    ports:
+      - "5434:5432"
+    volumes:
+      - tarefa_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices-network
+
+  # Kafka for event streaming
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - microservices-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - microservices-network
+
+volumes:
+  auth_data:
+  projeto_data:
+  tarefa_data:
+
+networks:
+  microservices-network:
+    driver: bridge

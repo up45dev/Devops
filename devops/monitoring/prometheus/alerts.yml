@@ -1,0 +1,87 @@
+groups:
+- name: gestao-tarefas-alerts
+  rules:
+  # Application is down
+  - alert: ApplicationDown
+    expr: up{job="gestao-tarefas-backend"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Gestão de Tarefas application is down"
+      description: "The Gestão de Tarefas backend application has been down for more than 1 minute."
+
+  # High response time
+  - alert: HighResponseTime
+    expr: http_server_requests_seconds{quantile="0.95",application="gestao-tarefas"} > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High response time detected"
+      description: "95th percentile response time is above 1 second for more than 5 minutes."
+
+  # High error rate
+  - alert: HighErrorRate
+    expr: |
+      (
+        sum(rate(http_server_requests_seconds_count{status=~"5..",application="gestao-tarefas"}[5m]))
+        /
+        sum(rate(http_server_requests_seconds_count{application="gestao-tarefas"}[5m]))
+      ) > 0.05
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High error rate detected"
+      description: "Error rate is above 5% for more than 5 minutes."
+
+  # High memory usage
+  - alert: HighMemoryUsage
+    expr: |
+      (
+        jvm_memory_used_bytes{application="gestao-tarefas",area="heap"}
+        /
+        jvm_memory_max_bytes{application="gestao-tarefas",area="heap"}
+      ) > 0.85
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High JVM memory usage"
+      description: "JVM heap memory usage is above 85% for more than 10 minutes."
+
+  # Database connection issues
+  - alert: DatabaseConnectionIssues
+    expr: hikaricp_connections_active{application="gestao-tarefas"} / hikaricp_connections_max{application="gestao-tarefas"} > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High database connection usage"
+      description: "Database connection pool usage is above 80% for more than 5 minutes."
+
+  # Low disk space
+  - alert: LowDiskSpace
+    expr: |
+      (
+        node_filesystem_avail_bytes{mountpoint="/"}
+        /
+        node_filesystem_size_bytes{mountpoint="/"}
+      ) < 0.1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Low disk space"
+      description: "Available disk space is below 10% for more than 5 minutes."
+
+  # High CPU usage
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage"
+      description: "CPU usage is above 80% for more than 10 minutes."

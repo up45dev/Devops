@@ -1,0 +1,157 @@
+<mat-card class="tarefa-form-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>{{ tarefa ? 'edit' : 'add' }}</mat-icon>
+      {{ tarefa ? 'Editar Tarefa' : 'Nova Tarefa' }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- Loading para projetos -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Carregando projetos...</p>
+    </div>
+
+    <!-- Formulário -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+      
+      <!-- Linha 1: Título e Projeto -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-large">
+          <mat-label>Título *</mat-label>
+          <input matInput formControlName="titulo" placeholder="Digite o título da tarefa">
+          <mat-error *ngIf="hasError('titulo')">
+            {{ getErrorMessage('titulo') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-medium">
+          <mat-label>Projeto *</mat-label>
+          <mat-select formControlName="idProjeto">
+            <mat-option *ngFor="let projeto of projetos" [value]="projeto.id">
+              {{ projeto.nome }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="hasError('idProjeto')">
+            {{ getErrorMessage('idProjeto') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 2: Status e Prioridade -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-medium">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option *ngFor="let option of statusTarefaOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-medium">
+          <mat-label>Prioridade</mat-label>
+          <mat-select formControlName="prioridade">
+            <mat-option *ngFor="let option of prioridadeOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 3: Datas -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-medium">
+          <mat-label>Data de Início</mat-label>
+          <input matInput [matDatepicker]="dataInicioPicker" formControlName="dataInicio">
+          <mat-datepicker-toggle matIconSuffix [for]="dataInicioPicker"></mat-datepicker-toggle>
+          <mat-datepicker #dataInicioPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-medium">
+          <mat-label>Data Fim Prevista</mat-label>
+          <input matInput [matDatepicker]="dataFimPicker" formControlName="dataFimPrevista">
+          <mat-datepicker-toggle matIconSuffix [for]="dataFimPicker"></mat-datepicker-toggle>
+          <mat-datepicker #dataFimPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 4: Horas e Percentual -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-small">
+          <mat-label>Estimativa (horas)</mat-label>
+          <input matInput type="number" formControlName="estimativaHoras" 
+                 placeholder="0" min="0" step="0.5">
+          <mat-error *ngIf="hasError('estimativaHoras')">
+            {{ getErrorMessage('estimativaHoras') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-small">
+          <mat-label>Horas Trabalhadas</mat-label>
+          <input matInput type="number" formControlName="horasTrabalhadas" 
+                 placeholder="0" min="0" step="0.5">
+          <mat-error *ngIf="hasError('horasTrabalhadas')">
+            {{ getErrorMessage('horasTrabalhadas') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-small">
+          <mat-label>Conclusão (%)</mat-label>
+          <input matInput type="number" formControlName="percentualConclusao" 
+                 placeholder="0" min="0" max="100">
+          <mat-error *ngIf="hasError('percentualConclusao')">
+            {{ getErrorMessage('percentualConclusao') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 5: Responsável -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-large">
+          <mat-label>Responsável</mat-label>
+          <input matInput formControlName="responsavel" placeholder="Nome do responsável">
+          <mat-error *ngIf="hasError('responsavel')">
+            {{ getErrorMessage('responsavel') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 6: Descrição -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Descrição</mat-label>
+          <textarea matInput formControlName="descricao" 
+                    placeholder="Descrição detalhada da tarefa" 
+                    rows="3"></textarea>
+        </mat-form-field>
+      </div>
+
+      <!-- Linha 7: Observações -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Observações</mat-label>
+          <textarea matInput formControlName="observacoes" 
+                    placeholder="Observações adicionais" 
+                    rows="2"></textarea>
+        </mat-form-field>
+      </div>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions align="end" *ngIf="!isLoading">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>cancel</mat-icon>
+      Cancelar
+    </button>
+    
+    <button mat-raised-button color="primary" 
+            (click)="onSubmit()" 
+            [disabled]="form.invalid || isSubmitting">
+      <mat-icon>{{ isSubmitting ? 'hourglass_empty' : 'save' }}</mat-icon>
+      {{ isSubmitting ? 'Salvando...' : (tarefa ? 'Atualizar' : 'Salvar') }}
+    </button>
+  </mat-card-actions>
+</mat-card>

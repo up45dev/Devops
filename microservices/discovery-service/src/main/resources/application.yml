@@ -1,0 +1,58 @@
+# Discovery Service Configuration
+spring:
+  application:
+    name: discovery-service
+  profiles:
+    active: default
+    
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  server:
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000
+
+# Security Configuration
+spring.security.user:
+  name: eureka
+  password: eureka
+  roles: ADMIN
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/discovery-service.log
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+      
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/

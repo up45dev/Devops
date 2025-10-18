@@ -1,0 +1,129 @@
+# API Gateway Configuration
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: default
+    
+  # Gateway Configuration
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # Auth Service Routes
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST
+        
+        # Projeto Service Routes
+        - id: projeto-service
+          uri: lb://projeto-service
+          predicates:
+            - Path=/api/projetos/**
+          filters:
+            - name: AuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        
+        # Tarefa Service Routes
+        - id: tarefa-service
+          uri: lb://tarefa-service
+          predicates:
+            - Path=/api/tarefas/**
+          filters:
+            - name: AuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        
+        # Admin UI Service Routes
+        - id: admin-ui-service
+          uri: lb://admin-ui-service
+          predicates:
+            - Path=/admin/**
+          filters:
+            - name: AuthenticationFilter
+        
+        # Web UI Service Routes
+        - id: web-ui-service
+          uri: lb://web-ui-service
+          predicates:
+            - Path=/web/**
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+server:
+  port: 8000
+
+# Eureka Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    com.taskmanagement.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/api-gateway.log
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+      
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/

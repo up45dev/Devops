@@ -1,0 +1,44 @@
+# Multi-stage build para otimizar o tamanho da imagem
+FROM maven:3.9.4-openjdk-17-slim AS build
+
+# Configurar diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos de configuração Maven
+COPY pom.xml .
+COPY src ./src
+
+# Build da aplicação
+RUN mvn clean package -DskipTests
+
+# Imagem final
+FROM openjdk:17-jre-slim
+
+# Instalar ferramentas de monitoramento
+RUN apt-get update && apt-get install -y curl wget && rm -rf /var/lib/apt/lists/*
+
+# Criar usuário não-root
+RUN addgroup --system spring && adduser --system spring --ingroup spring
+USER spring:spring
+
+# Configurar diretório de trabalho
+WORKDIR /app
+
+# Copiar JAR da aplicação
+COPY --from=build /app/target/*.jar app.jar
+
+# Configurar JVM para monitoramento
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+ENV MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE="health,info,metrics,prometheus"
+ENV MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS="always"
+ENV MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED="true"
+
+# Expor portas
+EXPOSE 8080 8081
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Comando de inicialização
+ENTRYPOINT ["java", "-jar", "app.jar"]

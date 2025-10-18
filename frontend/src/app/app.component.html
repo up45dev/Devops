@@ -1,0 +1,103 @@
+<div class="app-container">
+  <!-- Toolbar Principal -->
+  <mat-toolbar color="primary" class="app-toolbar">
+    <mat-icon class="app-icon">dashboard</mat-icon>
+    <span class="app-title">{{ title }}</span>
+    
+    <span class="spacer"></span>
+    
+    <!-- Seleção de Projeto -->
+    <form [formGroup]="projetoForm" class="projeto-selector">
+      <mat-form-field appearance="outline" class="projeto-field">
+        <mat-label>Projeto</mat-label>
+        <mat-select formControlName="projetoId">
+          <mat-option value="">Todos os projetos</mat-option>
+          <mat-option *ngFor="let projeto of projetos" [value]="projeto.id">
+            {{ projeto.nome }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+    
+    <span class="version">v{{ version }}</span>
+  </mat-toolbar>
+
+  <!-- Conteúdo Principal -->
+  <div class="main-content">
+    
+    <!-- Informações do Projeto Selecionado -->
+    <mat-card class="projeto-info" *ngIf="projetoSelecionado">
+      <mat-card-content>
+        <div class="projeto-info-content">
+          <mat-icon>folder</mat-icon>
+          <span>Trabalhando no projeto: <strong>{{ getNomeProjetoSelecionado() }}</strong></span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <!-- Abas Principais -->
+    <mat-tab-group 
+      [selectedIndex]="selectedTabIndex" 
+      (selectedTabChange)="onTabChange($event.index)"
+      class="main-tabs">
+      
+      <!-- Aba: Formulário de Tarefa -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>{{ tarefaEditando ? 'edit' : 'add' }}</mat-icon>
+          {{ tarefaEditando ? 'Editar Tarefa' : 'Nova Tarefa' }}
+        </ng-template>
+        
+        <div class="tab-content">
+          <app-tarefa-form
+            [tarefa]="tarefaEditando"
+            [projetoSelecionado]="projetoSelecionado"
+            (tarefaSalva)="onTarefaSalva($event)"
+            (cancelar)="onCancelarForm()">
+          </app-tarefa-form>
+        </div>
+      </mat-tab>
+      
+      <!-- Aba: Lista de Tarefas -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>list</mat-icon>
+          Lista de Tarefas
+        </ng-template>
+        
+        <div class="tab-content">
+          <!-- Botão Nova Tarefa -->
+          <div class="tab-header">
+            <button mat-raised-button 
+                    color="primary" 
+                    (click)="onNovaTarefa()"
+                    class="btn-nova-tarefa">
+              <mat-icon>add</mat-icon>
+              Nova Tarefa
+            </button>
+          </div>
+          
+          <app-tarefa-list
+            [projetoSelecionado]="projetoSelecionado"
+            (editarTarefa)="onEditarTarefa($event)"
+            (tarefaExcluida)="onTarefaExcluida($event)">
+          </app-tarefa-list>
+        </div>
+      </mat-tab>
+      
+    </mat-tab-group>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span>{{ title }} - Desenvolvido por MiniMax Agent</span>
+      <span class="footer-links">
+        <a href="http://localhost:8080/swagger-ui.html" target="_blank" mat-button>
+          <mat-icon>api</mat-icon>
+          API Docs
+        </a>
+      </span>
+    </div>
+  </footer>
+</div>
