@@ -134,8 +134,8 @@ Além dos requisitos mínimos, o sistema inclui:
 
 ## 📞 **CONTATO**
 
-**Desenvolvedor:** MiniMax Agent  
-**Data de Entrega:** 2025-09-28  
+**Desenvolvedor: Felipe Leitão  
+**Data de Entrega:** 2025-10-20  
 **Prazo:** Entregue dentro do prazo sugerido (2 dias úteis)
 
 ---
